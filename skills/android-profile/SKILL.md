@@ -38,7 +38,7 @@ Start the configured emulator:
 ./scripts/start-avd.sh ./profiles/android.profile
 ```
 
-Run the Docker isolation smoke test from the repository root:
+Run the fake-command smoke test from the repository root:
 
 ```bash
 scripts/test-start-avd-docker.sh
@@ -55,5 +55,5 @@ scripts/test-start-avd-docker.sh
 ## Notes For Codex
 
 - Prefer running scripts from the plugin root so relative paths work naturally.
-- Ask before running workflows that download SDK packages, require Docker, or start long-lived emulator processes.
-- `test-start-avd-docker.sh` requires Docker and mounts the repository read-only into a container.
+- Ask before running workflows that download SDK packages or start long-lived emulator processes.
+- `test-start-avd-docker.sh` uses fake `emulator` and `adb` commands; it does not start Docker or a real emulator.

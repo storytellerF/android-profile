@@ -34,14 +34,8 @@ ANDROID_HOME=$HOME/android-sdk ./scripts/install-sdk.sh
 ./scripts/start-avd.sh ./profiles/android.profile
 ```
 
-Run the isolated `start-avd.sh` smoke test with Docker from the repository root:
+Run the `start-avd.sh` smoke test with fake emulator commands from the repository root:
 
 ```bash
 scripts/test-start-avd-docker.sh
-```
-
-Override the test image when needed:
-
-```bash
-DOCKER_IMAGE=bash:5.2 scripts/test-start-avd-docker.sh
 ```
