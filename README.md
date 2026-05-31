@@ -12,17 +12,19 @@ Codex plugin package for Android SDK and AVD profile scripts used by Docker-base
 
 ## Install
 
-Install the `android-profile` plugin from this repository's local marketplace:
+Add this GitHub repository as a Codex plugin marketplace:
 
-```text
-.agents/plugins/marketplace.json
+```bash
+codex plugin marketplace add https://github.com/storytellerF/android-profile
 ```
 
-The marketplace entry points to:
+Install the plugin from that marketplace:
 
-```text
-./plugins/android-profile
+```bash
+codex plugin add android-profile@android-profile-local
 ```
+
+Start a new Codex thread after installing so the plugin skill is loaded.
 
 ## Direct Script Usage
 
