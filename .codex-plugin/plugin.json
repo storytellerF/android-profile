@@ -4,7 +4,7 @@
   "description": "Shared Android SDK and AVD profile scripts for Docker-based Android emulator images.",
   "author": {
     "name": "Android Profile Maintainers",
-    "email": "",
+    "email": "fake@example.com",
     "url": "https://github.com/storytellerF/android-profile"
   },
   "homepage": "https://github.com/storytellerF/android-profile",
