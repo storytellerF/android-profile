@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 
 cleanup() {
@@ -55,7 +56,7 @@ if ! HOME="$HOME_DIR" \
     EMULATOR_ARGS_LOG="$EMULATOR_ARGS_LOG" \
     EMULATOR_ENV_LOG="$EMULATOR_ENV_LOG" \
     ADB_ARGS_LOG="$ADB_ARGS_LOG" \
-    bash "${SCRIPT_DIR}/start-avd.sh" "$PROFILE_PATH" > "$START_AVD_OUT" 2> "$START_AVD_ERR"; then
+    bash "${PLUGIN_DIR}/scripts/start-avd.sh" "$PROFILE_PATH" > "$START_AVD_OUT" 2> "$START_AVD_ERR"; then
     echo "Error: start-avd.sh failed." >&2
     cat "$START_AVD_OUT" >&2
     cat "$START_AVD_ERR" >&2

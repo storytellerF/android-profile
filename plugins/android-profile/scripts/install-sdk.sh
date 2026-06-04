@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 version_lt() {
     [ "$1" = "$2" ] && return 1
     local IFS=.
@@ -53,7 +55,7 @@ else
     fi
 fi
 
-yes | sdkmanager --licenses > /dev/null 2>&1
+"${SCRIPT_DIR}/accept-sdk-licenses.sh"
 
 LATEST_CLI_VERSION=$(sdkmanager --list | grep "cmdline-tools;latest" | awk '{print $3}' | sort -u)
 echo "Latest command line tools version available: $LATEST_CLI_VERSION"

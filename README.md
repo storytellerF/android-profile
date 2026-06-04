@@ -6,7 +6,8 @@ Codex plugin package for Android SDK and AVD profile scripts used by Docker-base
 
 - `.agents/plugins/marketplace.json`: repo-local Codex marketplace entry.
 - `plugins/android-profile/.codex-plugin/plugin.json`: plugin manifest.
-- `plugins/android-profile/scripts/`: Android SDK, AVD, emulator, and smoke-test scripts.
+- `plugins/android-profile/scripts/`: Android SDK, AVD, and emulator scripts.
+- `plugins/android-profile/tests/`: smoke-test scripts.
 - `plugins/android-profile/profiles/android.profile`: default Android emulator profile.
 - `plugins/android-profile/skills/android-profile/SKILL.md`: Codex-facing usage instructions.
 
@@ -40,5 +41,5 @@ ANDROID_HOME=$HOME/android-sdk ./scripts/install-sdk.sh
 Run the `start-avd.sh` smoke test with fake emulator commands from the repository root:
 
 ```bash
-plugins/android-profile/scripts/test-start-avd-docker.sh
+plugins/android-profile/tests/test-start-avd-docker.sh
 ```

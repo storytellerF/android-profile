@@ -12,10 +12,11 @@ Use this skill when a task involves this plugin's Android SDK, AVD, emulator, or
 Resolve paths relative to this plugin root:
 
 - `scripts/install-sdk.sh`
+- `scripts/accept-sdk-licenses.sh`
 - `scripts/create-avd.sh`
 - `scripts/start-avd.sh`
-- `scripts/test-start-avd-docker.sh`
 - `scripts/profile-utils.sh`
+- `tests/test-start-avd-docker.sh`
 - `profiles/android.profile`
 
 ## Workflows
@@ -41,7 +42,7 @@ Start the configured emulator:
 Run the fake-command smoke test from the repository root:
 
 ```bash
-scripts/test-start-avd-docker.sh
+tests/test-start-avd-docker.sh
 ```
 
 ## Profile Rules

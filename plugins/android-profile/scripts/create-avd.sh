@@ -52,6 +52,44 @@ build_avdmanager_args() {
     append_args_from_env args_ref AVDMANAGER -- NAME PACKAGE
 }
 
+is_sdk_package_installed() {
+    local package="$1"
+    local installed_packages
+
+    if ! installed_packages="$(sdkmanager --list_installed 2>/dev/null)"; then
+        echo "Warning: Failed to query installed SDK packages. Will attempt to install ${package}." >&2
+        return 1
+    fi
+
+    printf '%s\n' "$installed_packages" \
+        | awk -v package="$package" -F '|' '
+            {
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
+                if ($1 == package) {
+                    found = 1
+                }
+            }
+            END {
+                exit found ? 0 : 1
+            }
+        '
+}
+
+install_system_image_if_needed() {
+    local package="$1"
+
+    echo "Checking whether system image is already installed: ${package}" >&2
+    if is_sdk_package_installed "$package"; then
+        echo "System image already installed. Skipping download: ${package}" >&2
+        return 0
+    fi
+
+    echo "System image not found. Installing: ${package}" >&2
+    sdkmanager "$package"
+    echo "System image installation finished: ${package}" >&2
+}
+
+"${SCRIPT_DIR}/accept-sdk-licenses.sh"
 load_profile "$ANDROID_PROFILE"
 assert_profile_keys_absent "$ANDROID_PROFILE" ARCH ABI AVD_ARCH AVD_ABI AVDMANAGER_ABI AVDMANAGER_ARCH EMULATOR_ABI EMULATOR_ARCH
 require_profile_value AVD_NAME
@@ -64,7 +102,7 @@ validate_system_image_arch "$ARCH"
 echo "AVD_NAME: $AVD_NAME" >&2
 echo "System image package prefix: $SYS_IMG_PKG" >&2
 echo "Resolved system image package: $RESOLVED_SYS_IMG_PKG" >&2
-sdkmanager "$RESOLVED_SYS_IMG_PKG"
+install_system_image_if_needed "$RESOLVED_SYS_IMG_PKG"
 
 if ! avdmanager list avd | grep -q "Name: $AVD_NAME"; then
     declare -a avdmanager_args
@@ -73,11 +111,7 @@ if ! avdmanager list avd | grep -q "Name: $AVD_NAME"; then
     build_avdmanager_args avdmanager_args
     echo "avdmanager command: avdmanager ${avdmanager_args[*]}" >&2
 
-    if is_true "${AVDMANAGER_USE_CUSTOM_HARDWARE_PROFILE:-false}"; then
-        printf 'yes\n' | avdmanager "${avdmanager_args[@]}"
-    else
-        printf 'no\n' | avdmanager "${avdmanager_args[@]}"
-    fi
+    avdmanager "${avdmanager_args[@]}"
 else
     echo "AVD '$AVD_NAME' already exists." >&2
 fi
