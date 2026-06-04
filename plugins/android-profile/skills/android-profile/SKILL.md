@@ -49,6 +49,7 @@ tests/test-start-avd-docker.sh
 
 - Pass a profile path as the first argument when using a non-default profile.
 - If no profile path is passed, `create-avd.sh` and `start-avd.sh` use `${ANDROID_PROFILE:-${ANDROID_PROFILE_DIR:-$HOME/android-profiles}/android.profile}`.
+- When adding or checking `EMULATOR_FLAG_*` and `EMULATOR_VALUE_*` entries, use the official emulator command-line reference: https://developer.android.google.cn/studio/run/emulator-commandline
 - `SYS_IMG_PKG` must be the Android system image package prefix without the ABI suffix.
 - The scripts append the ABI from the runtime architecture: `x86_64` uses `x86_64`, and `aarch64` uses `arm64-v8a`.
 - Do not define `ARCH`, `ABI`, `AVD_ARCH`, `AVD_ABI`, `AVDMANAGER_ABI`, `AVDMANAGER_ARCH`, `EMULATOR_ABI`, or `EMULATOR_ARCH` in profiles.

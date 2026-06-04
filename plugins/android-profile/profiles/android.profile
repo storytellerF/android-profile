@@ -3,18 +3,15 @@ AVD_NAME=pixel-android-36-google-apis
 SYS_IMG_PKG='system-images;android-36;google_apis'
 
 # avdmanager create avd mappings
-AVDMANAGER_FLAG_FORCE=true
 AVDMANAGER_VALUE_DEVICE=pixel
 AVDMANAGER_VALUE_PATH=
-AVDMANAGER_VALUE_TAG=
-AVDMANAGER_VALUE_SDCARD=
-
-AVDMANAGER_USE_CUSTOM_HARDWARE_PROFILE=false
 
 # Display
-EMULATOR_DISPLAY=:1
+EMULATOR_DISPLAY=:0
 
 # Common startup flags
+# Check https://developer.android.google.cn/studio/run/emulator-commandline
+# for the supported emulator command-line arguments.
 EMULATOR_FLAG_ACCEL_OFF=false
 EMULATOR_FLAG_DELAY_ADB=false
 EMULATOR_FLAG_NO_AUDIO=true
@@ -37,7 +34,7 @@ EMULATOR_VALUE_CAMERA_FRONT=
 EMULATOR_VALUE_CORES=
 EMULATOR_VALUE_DATA=
 EMULATOR_VALUE_DNS_SERVER=
-EMULATOR_VALUE_GPU=swiftshader_indirect
+EMULATOR_VALUE_GPU=
 EMULATOR_VALUE_GRPC=
 EMULATOR_VALUE_HTTP_PROXY=
 EMULATOR_VALUE_MEMORY=
