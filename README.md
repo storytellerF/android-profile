@@ -43,3 +43,12 @@ ANDROID_HOME=$HOME/android-sdk ./scripts/install-sdk.sh
 ```bash
 plugins/android-profile/tests/test-start-avd-docker.sh
 ```
+
+## 宿主机模拟器供虚拟机访问
+
+如果 Android 模拟器运行在宿主机上，而需要从虚拟机中访问宿主机的 ADB 端口，还需要在宿主机上添加端口转发和防火墙规则。以下示例假设虚拟机网段为 `192.168.80.0/24`，宿主机在该虚拟网络中的地址为 `192.168.80.1`：
+
+```powershell
+netsh interface portproxy add v4tov4 listenaddress=192.168.80.1 listenport=5555 connectaddress=127.0.0.1 connectport=5555
+netsh advfirewall firewall add rule name="Android Emulator ADB 5555" dir=in action=allow protocol=TCP localport=5555 remoteip=192.168.80.0/24
+```

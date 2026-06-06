@@ -59,3 +59,4 @@ tests/test-start-avd-docker.sh
 - 优先从插件根目录运行脚本，这样相对路径可以自然工作。
 - 运行会下载 SDK 包或启动长期运行模拟器进程的工作流前，先询问用户。
 - `test-start-avd-docker.sh` 使用假的 `emulator` 和 `adb` 命令；它不会启动 Docker 或真实模拟器。
+- 如果模拟器在宿主机上、虚拟机需要访问宿主机 ADB 端口，提示用户在宿主机设置 `netsh interface portproxy` 端口转发，并添加允许虚拟机网段访问 `5555` 端口的防火墙规则。
