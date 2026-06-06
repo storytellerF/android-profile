@@ -1,15 +1,15 @@
 ---
 name: android-profile
-description: Use bundled Android SDK and AVD profile scripts to install Android SDK tools, create Android Virtual Devices, start Docker-friendly emulators, and run the start-avd smoke test.
+description: 使用随附的 Android SDK 和 AVD 配置脚本安装 Android SDK 工具、创建 Android 虚拟设备、启动适合 Docker 的模拟器，并运行 start-avd 冒烟测试。
 ---
 
 # Android Profile
 
-Use this skill when a task involves this plugin's Android SDK, AVD, emulator, or Docker smoke-test scripts.
+当任务涉及此插件的 Android SDK、AVD、模拟器或 Docker 冒烟测试脚本时，使用此技能。
 
-## Bundled Paths
+## 随附路径
 
-Resolve paths relative to this plugin root:
+按此插件根目录解析路径：
 
 - `scripts/install-sdk.sh`
 - `scripts/accept-sdk-licenses.sh`
@@ -19,43 +19,43 @@ Resolve paths relative to this plugin root:
 - `tests/test-start-avd-docker.sh`
 - `profiles/android.profile`
 
-## Workflows
+## 工作流
 
-Install or update Android SDK tools:
+安装或更新 Android SDK 工具：
 
 ```bash
 ANDROID_HOME=${ANDROID_HOME:-$HOME/android-sdk} ./scripts/install-sdk.sh
 ```
 
-Create the configured AVD:
+创建已配置的 AVD：
 
 ```bash
 ./scripts/create-avd.sh ./profiles/android.profile
 ```
 
-Start the configured emulator:
+启动已配置的模拟器：
 
 ```bash
 ./scripts/start-avd.sh ./profiles/android.profile
 ```
 
-Run the fake-command smoke test from the repository root:
+从仓库根目录运行假命令冒烟测试：
 
 ```bash
 tests/test-start-avd-docker.sh
 ```
 
-## Profile Rules
+## 配置规则
 
-- Pass a profile path as the first argument when using a non-default profile.
-- If no profile path is passed, `create-avd.sh` and `start-avd.sh` use `${ANDROID_PROFILE:-${ANDROID_PROFILE_DIR:-$HOME/android-profiles}/android.profile}`.
-- When adding or checking `EMULATOR_FLAG_*` and `EMULATOR_VALUE_*` entries, use the official emulator command-line reference: https://developer.android.google.cn/studio/run/emulator-commandline
-- `SYS_IMG_PKG` must be the Android system image package prefix without the ABI suffix.
-- The scripts append the ABI from the runtime architecture: `x86_64` uses `x86_64`, and `aarch64` uses `arm64-v8a`.
-- Do not define `ARCH`, `ABI`, `AVD_ARCH`, `AVD_ABI`, `AVDMANAGER_ABI`, `AVDMANAGER_ARCH`, `EMULATOR_ABI`, or `EMULATOR_ARCH` in profiles.
+- 使用非默认配置时，将配置路径作为第一个参数传入。
+- 如果未传入配置路径，`create-avd.sh` 和 `start-avd.sh` 会使用 `${ANDROID_PROFILE:-${ANDROID_PROFILE_DIR:-$HOME/android-profiles}/android.profile}`。
+- 添加或检查 `EMULATOR_FLAG_*` 和 `EMULATOR_VALUE_*` 条目时，使用官方模拟器命令行参考：https://developer.android.google.cn/studio/run/emulator-commandline
+- `SYS_IMG_PKG` 必须是 Android 系统镜像包前缀，不包含 ABI 后缀。
+- 脚本会根据运行时架构追加 ABI：`x86_64` 使用 `x86_64`，`aarch64` 使用 `arm64-v8a`。
+- 不要在配置文件中定义 `ARCH`、`ABI`、`AVD_ARCH`、`AVD_ABI`、`AVDMANAGER_ABI`、`AVDMANAGER_ARCH`、`EMULATOR_ABI` 或 `EMULATOR_ARCH`。
 
-## Notes For Codex
+## Codex 注意事项
 
-- Prefer running scripts from the plugin root so relative paths work naturally.
-- Ask before running workflows that download SDK packages or start long-lived emulator processes.
-- `test-start-avd-docker.sh` uses fake `emulator` and `adb` commands; it does not start Docker or a real emulator.
+- 优先从插件根目录运行脚本，这样相对路径可以自然工作。
+- 运行会下载 SDK 包或启动长期运行模拟器进程的工作流前，先询问用户。
+- `test-start-avd-docker.sh` 使用假的 `emulator` 和 `adb` 命令；它不会启动 Docker 或真实模拟器。
