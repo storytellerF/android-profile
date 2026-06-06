@@ -1,7 +1,15 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/profile-utils.sh"
+
+ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-${HOME}/android-sdk}}"
+echo "android home: $ANDROID_HOME"
+export ANDROID_HOME
+CLI_VERSION=""
 
 version_lt() {
     [ "$1" = "$2" ] && return 1
@@ -16,27 +24,75 @@ version_lt() {
     return 1
 }
 
-mkdir -p ${ANDROID_HOME}
-sudo chown -R $(whoami):$(whoami) ${ANDROID_HOME}
+platform_tag() {
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*)
+            printf '%s\n' win
+            ;;
+        Darwin*)
+            printf '%s\n' mac
+            ;;
+        *)
+            printf '%s\n' linux
+            ;;
+    esac
+}
+
+download_file() {
+    local url="$1"
+    local output="$2"
+
+    if command -v curl >/dev/null 2>&1; then
+        curl -fL "$url" -o "$output"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -O "$output" "$url"
+    else
+        echo "Error: curl or wget is required to download Android SDK command-line tools." >&2
+        return 1
+    fi
+}
+
+maybe_chown_android_home() {
+    if is_windows_shell; then
+        return 0
+    fi
+
+    if command -v sudo >/dev/null 2>&1; then
+        sudo chown -R "$(whoami):$(whoami)" "$ANDROID_HOME"
+    fi
+}
+
+resolve_sdkmanager_in_dir() {
+    local dir="$1"
+
+    resolve_executable_in_dir "$dir" sdkmanager
+}
+
+mkdir -p "$ANDROID_HOME"
+maybe_chown_android_home
 
 download_and_install_cmdline_tools() {
     echo "Android SDK command-line tools not found or outdated. Downloading..."
 
-    local download_url="https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip"
-    if ! wget -O commandline-tools.zip "$download_url"; then
+    local os_tag
+    local download_url
+    os_tag="$(platform_tag)"
+    download_url="https://dl.google.com/android/repository/commandlinetools-${os_tag}-14742923_latest.zip"
+
+    if ! download_file "$download_url" commandline-tools.zip; then
         echo "Error: Failed to download command-line tools from $download_url"
         return 1
     fi
 
-    mkdir -p ${ANDROID_HOME}/cmdline-tools
-    if ! unzip -q commandline-tools.zip -d ${ANDROID_HOME}/cmdline-tools; then
+    mkdir -p "${ANDROID_HOME}/cmdline-tools"
+    if ! unzip -q commandline-tools.zip -d "${ANDROID_HOME}/cmdline-tools"; then
         echo "Error: Failed to extract command-line tools"
         rm -f commandline-tools.zip
         return 1
     fi
 
-    rm -rf ${ANDROID_HOME}/cmdline-tools/latest
-    mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest
+    rm -rf "${ANDROID_HOME}/cmdline-tools/latest"
+    mv "${ANDROID_HOME}/cmdline-tools/cmdline-tools" "${ANDROID_HOME}/cmdline-tools/latest"
     rm -f commandline-tools.zip
     echo "Android SDK command-line tools installed."
 }
@@ -47,39 +103,28 @@ if [ ! -d "${ANDROID_HOME}/cmdline-tools/latest" ]; then
 else
     echo "Android SDK command-line tools found."
 
-    CLI_VERSION=$(grep "Pkg.Revision" ${ANDROID_HOME}/cmdline-tools/latest/source.properties 2>/dev/null | awk -F '=' '{print $2}')
+    CLI_VERSION=$(grep "Pkg.Revision" "${ANDROID_HOME}/cmdline-tools/latest/source.properties" 2>/dev/null | awk -F '=' '{print $2}')
     echo "Current command line tools version: ${CLI_VERSION:-unknown}"
-    if version_lt "$CLI_VERSION" "19.0"; then
+    if [ -n "$CLI_VERSION" ] && version_lt "$CLI_VERSION" "20.0"; then
         echo "Updating command line tools to the latest version..."
         download_and_install_cmdline_tools || exit 1
     fi
 fi
 
+SDKMANAGER="$(resolve_android_tool sdkmanager)"
+
 "${SCRIPT_DIR}/accept-sdk-licenses.sh"
-
-LATEST_CLI_VERSION=$(sdkmanager --list | grep "cmdline-tools;latest" | awk '{print $3}' | sort -u)
-echo "Latest command line tools version available: $LATEST_CLI_VERSION"
-
-if [ -n "$CLI_VERSION" ] && [ -n "$LATEST_CLI_VERSION" ] && [ "$CLI_VERSION" != "$LATEST_CLI_VERSION" ]; then
-    echo "Updating command line tools to the latest version..."
-    mv ${ANDROID_HOME}/cmdline-tools/latest ${ANDROID_HOME}/cmdline-tools/backup-${CLI_VERSION}
-    ${ANDROID_HOME}/cmdline-tools/backup-${CLI_VERSION}/bin/sdkmanager "cmdline-tools;latest"
-    echo "Android SDK command-line tools updated to version $LATEST_CLI_VERSION."
-    echo "You may want to remove the backup of the old command line tools at ${ANDROID_HOME}/cmdline-tools/backup-${CLI_VERSION} if everything works fine."
-else
-    echo "Android SDK command-line tools are up to date."
-fi
 
 if [ ! -d "${ANDROID_HOME}/platform-tools" ]; then
     echo "Installing platform-tools..."
-    sdkmanager "platform-tools"
+    "$SDKMANAGER" "platform-tools"
 else
     echo "platform-tools already installed."
 fi
 
 if [ ! -d "${ANDROID_HOME}/emulator" ]; then
     echo "Installing emulator..."
-    sdkmanager "emulator"
+    "$SDKMANAGER" "emulator"
 else
     echo "emulator already installed."
 fi

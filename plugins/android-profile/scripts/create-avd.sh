@@ -14,6 +14,9 @@ fi
 # shellcheck source=/dev/null
 source "${SCRIPT_DIR}/profile-utils.sh"
 
+SDKMANAGER="$(resolve_android_tool sdkmanager)"
+AVDMANAGER="$(resolve_android_tool avdmanager)"
+
 validate_system_image_arch() {
     local arch="$1"
     local expected_abi=""
@@ -56,7 +59,7 @@ is_sdk_package_installed() {
     local package="$1"
     local installed_packages
 
-    if ! installed_packages="$(sdkmanager --list_installed 2>/dev/null)"; then
+    if ! installed_packages="$("$SDKMANAGER" --list_installed 2>/dev/null)"; then
         echo "Warning: Failed to query installed SDK packages. Will attempt to install ${package}." >&2
         return 1
     fi
@@ -85,7 +88,7 @@ install_system_image_if_needed() {
     fi
 
     echo "System image not found. Installing: ${package}" >&2
-    sdkmanager "$package"
+    "$SDKMANAGER" "$package"
     echo "System image installation finished: ${package}" >&2
 }
 
@@ -104,14 +107,14 @@ echo "System image package prefix: $SYS_IMG_PKG" >&2
 echo "Resolved system image package: $RESOLVED_SYS_IMG_PKG" >&2
 install_system_image_if_needed "$RESOLVED_SYS_IMG_PKG"
 
-if ! avdmanager list avd | grep -q "Name: $AVD_NAME"; then
+if ! "$AVDMANAGER" list avd | grep -q "Name: $AVD_NAME"; then
     declare -a avdmanager_args
 
     echo "Creating AVD: $AVD_NAME" >&2
     build_avdmanager_args avdmanager_args
     echo "avdmanager command: avdmanager ${avdmanager_args[*]}" >&2
 
-    avdmanager "${avdmanager_args[@]}"
+    "$AVDMANAGER" "${avdmanager_args[@]}"
 else
     echo "AVD '$AVD_NAME' already exists." >&2
 fi

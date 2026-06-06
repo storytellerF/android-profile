@@ -1,6 +1,6 @@
 # Required
-AVD_NAME=pixel-android-36-google-apis
-SYS_IMG_PKG='system-images;android-36;google_apis'
+AVD_NAME=pixel-android-36_1-google-apis
+SYS_IMG_PKG='system-images;android-36.1;google_apis'
 
 # avdmanager create avd mappings
 AVDMANAGER_VALUE_DEVICE=pixel
@@ -24,7 +24,7 @@ EMULATOR_FLAG_NO_WINDOW=false
 EMULATOR_FLAG_NETFAST=false
 EMULATOR_FLAG_READ_ONLY=false
 EMULATOR_FLAG_SHOW_KERNEL=true
-EMULATOR_FLAG_VERBOSE=true
+EMULATOR_FLAG_VERBOSE=false
 EMULATOR_FLAG_WIPE_DATA=false
 
 # Value-style arguments

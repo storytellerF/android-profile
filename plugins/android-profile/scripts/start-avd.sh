@@ -15,6 +15,9 @@ LOADED_PROFILE="$ANDROID_PROFILE"
 # shellcheck source=/dev/null
 source "${SCRIPT_DIR}/profile-utils.sh"
 
+ADB="$(resolve_android_tool adb)"
+EMULATOR="$(resolve_android_tool emulator)"
+
 build_emulator_args() {
     local -n args_ref="$1"
 
@@ -25,7 +28,7 @@ build_emulator_args() {
 shutdown() {
     echo "Shutting down emulator gracefully..."
     if kill -0 "$EMULATOR_PID" 2>/dev/null; then
-        adb emu kill
+        "$ADB" emu kill
         wait "$EMULATOR_PID" || true
     fi
     echo "Emulator shut down."
@@ -47,7 +50,7 @@ declare -a emulator_args
 build_emulator_args emulator_args
 echo "Emulator command: emulator ${emulator_args[*]}"
 
-emulator "${emulator_args[@]}" &
+"$EMULATOR" "${emulator_args[@]}" &
 
 EMULATOR_PID=$!
 

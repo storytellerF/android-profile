@@ -80,6 +80,72 @@ is_true() {
     esac
 }
 
+is_windows_shell() {
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+resolve_executable_in_dir() {
+    local dir="$1"
+    local name="$2"
+    local candidate
+
+    [ -n "$dir" ] || return 1
+
+    for candidate in "$dir/$name" "$dir/${name}.bat" "$dir/${name}.cmd" "$dir/${name}.exe"; do
+        if [ -f "$candidate" ]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+resolve_android_tool() {
+    local name="$1"
+    local candidate
+    local tool_dir=""
+    local android_home="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-${HOME}/android-sdk}}"
+
+    for candidate in "$name" "${name}.bat" "${name}.cmd" "${name}.exe"; do
+        if command -v "$candidate" >/dev/null 2>&1; then
+            command -v "$candidate"
+            return 0
+        fi
+    done
+
+    if [ -n "$android_home" ]; then
+        case "$name" in
+            sdkmanager|avdmanager)
+                tool_dir="$android_home/cmdline-tools/latest/bin"
+                ;;
+            adb)
+                tool_dir="$android_home/platform-tools"
+                ;;
+            emulator)
+                tool_dir="$android_home/emulator"
+                ;;
+            *)
+                tool_dir=""
+                ;;
+        esac
+
+        if resolve_executable_in_dir "$tool_dir" "$name"; then
+            return 0
+        fi
+    fi
+
+    echo "Error: Android tool not found: ${name}. Add it to PATH or set ANDROID_HOME." >&2
+    return 1
+}
+
 has_any_var_with_prefix() {
     local var_prefix="$1"
     local -a vars
