@@ -6,6 +6,12 @@ SYS_IMG_PKG='system-images;android-36.1;google_apis'
 AVDMANAGER_VALUE_device=pixel
 AVDMANAGER_VALUE_path=
 
+# AVD config.ini overrides. Use double underscores for dots in config keys;
+# single underscores are preserved. For example:
+# EMULATOR_CONFIG_hw__gpu__enabled=yes
+# EMULATOR_CONFIG_hw__ramSize=4G
+EMULATOR_CONFIG_disk__dataPartition__size=10G
+
 # Display
 EMULATOR_DISPLAY=:0
 

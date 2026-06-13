@@ -40,6 +40,9 @@ load_profile "$ANDROID_PROFILE"
 assert_profile_keys_absent "$LOADED_PROFILE" ARCH ABI AVD_ARCH AVD_ABI AVDMANAGER_ABI AVDMANAGER_ARCH EMULATOR_ABI EMULATOR_ARCH
 require_profile_value AVD_NAME
 
+AVD_CONFIG_PATH="$(resolve_avd_config_path "$AVD_NAME")"
+apply_emulator_config "$AVD_CONFIG_PATH"
+
 echo "Starting emulator..."
 
 export DISPLAY="${EMULATOR_DISPLAY:-:1}"

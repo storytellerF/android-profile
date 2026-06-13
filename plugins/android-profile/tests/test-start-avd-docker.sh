@@ -39,18 +39,27 @@ FAKE_BIN_DIR="${TMP_DIR}/fake-bin"
 PROFILE_PATH="${TMP_DIR}/android.profile"
 EMULATOR_ARGS_LOG="${TMP_DIR}/emulator-args.log"
 EMULATOR_ENV_LOG="${TMP_DIR}/emulator-env.log"
+EMULATOR_CONFIG_LOG="${TMP_DIR}/emulator-config.log"
 ADB_ARGS_LOG="${TMP_DIR}/adb-args.log"
 START_AVD_OUT="${TMP_DIR}/start-avd.out"
 START_AVD_ERR="${TMP_DIR}/start-avd.err"
 
-mkdir -p "${HOME_DIR}/.android/avd/docker-test.avd" "$FAKE_BIN_DIR"
-touch "${HOME_DIR}/.android/avd/docker-test.avd/stale.lock"
+mkdir -p "${HOME_DIR}/.android/avd/docker-test-avd.avd" "$FAKE_BIN_DIR"
+touch "${HOME_DIR}/.android/avd/docker-test-avd.avd/stale.lock"
+cat > "${HOME_DIR}/.android/avd/docker-test-avd.avd/config.ini" <<'CONFIG'
+hw.gpu.enabled=no
+hw.gpu.mode=auto
+hw.accelerometer_uncalibrated=yes
+duplicate.key=old-first
+duplicate.key=old-second
+CONFIG
 
 cat > "${FAKE_BIN_DIR}/emulator" <<'EMULATOR'
 #!/usr/bin/env bash
 set -euo pipefail
 printf "%s\n" "$@" > "${EMULATOR_ARGS_LOG}"
 printf "DISPLAY=%s\n" "${DISPLAY:-}" > "${EMULATOR_ENV_LOG}"
+cp "${HOME}/.android/avd/docker-test-avd.avd/config.ini" "${EMULATOR_CONFIG_LOG}"
 exit 0
 EMULATOR
 
@@ -73,6 +82,11 @@ EMULATOR_FLAG_Mixed_Case=true
 EMULATOR_VALUE_gpu=swiftshader_indirect
 EMULATOR_VALUE_memory=2048
 EMULATOR_VALUE_Custom_Value=preserved
+EMULATOR_CONFIG_hw__gpu__enabled=yes
+EMULATOR_CONFIG_hw__gpu__mode=swiftshader_indirect
+EMULATOR_CONFIG_hw__accelerometer_uncalibrated=no
+EMULATOR_CONFIG_disk__dataPartition__size=10G
+EMULATOR_CONFIG_duplicate__key=final
 PROFILE
 
 echo "Running start-avd.sh smoke test with fake emulator commands..."
@@ -83,6 +97,7 @@ if ! HOME="$HOME_DIR" \
     PATH="${FAKE_BIN_DIR}:${PATH}" \
     EMULATOR_ARGS_LOG="$EMULATOR_ARGS_LOG" \
     EMULATOR_ENV_LOG="$EMULATOR_ENV_LOG" \
+    EMULATOR_CONFIG_LOG="$EMULATOR_CONFIG_LOG" \
     ADB_ARGS_LOG="$ADB_ARGS_LOG" \
     bash "${PLUGIN_DIR}/scripts/start-avd.sh" "$PROFILE_PATH" > "$START_AVD_OUT" 2> "$START_AVD_ERR"; then
     echo "Error: start-avd.sh failed." >&2
@@ -105,13 +120,23 @@ grep -q -- "-Mixed-Case" "$EMULATOR_ARGS_LOG"
 grep -q -- "-Custom-Value" "$EMULATOR_ARGS_LOG"
 grep -q "preserved" "$EMULATOR_ARGS_LOG"
 grep -q "DISPLAY=:42" "$EMULATOR_ENV_LOG"
+grep -qx "hw.gpu.enabled=yes" "$EMULATOR_CONFIG_LOG"
+grep -qx "hw.gpu.mode=swiftshader_indirect" "$EMULATOR_CONFIG_LOG"
+grep -qx "hw.accelerometer_uncalibrated=no" "$EMULATOR_CONFIG_LOG"
+grep -qx "disk.dataPartition.size=10G" "$EMULATOR_CONFIG_LOG"
+grep -qx "duplicate.key=final" "$EMULATOR_CONFIG_LOG"
+
+if [ "$(grep -c '^duplicate.key=' "$EMULATOR_CONFIG_LOG")" -ne 1 ]; then
+    echo "Error: duplicate config.ini keys were not collapsed." >&2
+    exit 1
+fi
 
 if grep -q -- "-verbose" "$EMULATOR_ARGS_LOG"; then
     echo "Error: false emulator flag was unexpectedly passed." >&2
     exit 1
 fi
 
-if [ -e "${HOME_DIR}/.android/avd/docker-test.avd/stale.lock" ]; then
+if [ -e "${HOME_DIR}/.android/avd/docker-test-avd.avd/stale.lock" ]; then
     echo "Error: stale AVD lock file was not removed." >&2
     exit 1
 fi

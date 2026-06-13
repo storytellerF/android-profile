@@ -207,6 +207,82 @@ append_args_from_env() {
     done
 }
 
+resolve_avd_config_path() {
+    local avd_name="$1"
+    local home_dir="${HOME:-/home/$(id -un)}"
+    local avd_home="${ANDROID_AVD_HOME:-${ANDROID_USER_HOME:-${home_dir}/.android}/avd}"
+    local avd_ini="${avd_home}/${avd_name}.ini"
+    local avd_dir=""
+
+    if [ -n "${AVDMANAGER_VALUE_path:-}" ]; then
+        avd_dir="$AVDMANAGER_VALUE_path"
+    elif [ -f "$avd_ini" ]; then
+        avd_dir="$(awk -F= '$1 == "path" { print substr($0, index($0, "=") + 1); exit }' "$avd_ini")"
+    fi
+
+    if [ -z "$avd_dir" ]; then
+        avd_dir="${avd_home}/${avd_name}.avd"
+    fi
+
+    printf '%s\n' "${avd_dir}/config.ini"
+}
+
+apply_emulator_config() {
+    local config_path="$1"
+    local -a config_vars
+    local var key value temp_path
+
+    mapfile -t config_vars < <(compgen -A variable EMULATOR_CONFIG_)
+    if [ "${#config_vars[@]}" -eq 0 ]; then
+        return 0
+    fi
+
+    if [ ! -f "$config_path" ]; then
+        echo "Error: emulator config file not found: $config_path" >&2
+        return 1
+    fi
+    if [ ! -w "$config_path" ]; then
+        echo "Error: emulator config file is not writable: $config_path" >&2
+        return 1
+    fi
+
+    echo "Applying emulator config overrides: $config_path"
+
+    for var in "${config_vars[@]}"; do
+        key="${var#EMULATOR_CONFIG_}"
+        key="${key//__/.}"
+        value="${!var-}"
+        temp_path="$(mktemp "${config_path}.tmp.XXXXXX")"
+
+        TARGET_KEY="$key" TARGET_VALUE="$value" awk '
+            BEGIN {
+                target_key = ENVIRON["TARGET_KEY"]
+                target_value = ENVIRON["TARGET_VALUE"]
+                replaced = 0
+            }
+            {
+                separator = index($0, "=")
+                current_key = separator ? substr($0, 1, separator - 1) : ""
+                if (current_key == target_key) {
+                    if (!replaced) {
+                        print target_key "=" target_value
+                        replaced = 1
+                    }
+                    next
+                }
+                print
+            }
+            END {
+                if (!replaced) {
+                    print target_key "=" target_value
+                }
+            }
+        ' "$config_path" > "$temp_path"
+        chmod --reference="$config_path" "$temp_path"
+        mv "$temp_path" "$config_path"
+    done
+}
+
 assert_profile_keys_absent() {
     local profile_path="$1"
     shift
