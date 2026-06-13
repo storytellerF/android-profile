@@ -14,9 +14,6 @@ fi
 # shellcheck source=/dev/null
 source "${SCRIPT_DIR}/profile-utils.sh"
 
-SDKMANAGER="$(resolve_android_tool sdkmanager)"
-AVDMANAGER="$(resolve_android_tool avdmanager)"
-
 validate_system_image_arch() {
     local arch="$1"
     local expected_abi=""
@@ -92,11 +89,14 @@ install_system_image_if_needed() {
     echo "System image installation finished: ${package}" >&2
 }
 
-"${SCRIPT_DIR}/accept-sdk-licenses.sh"
 load_profile "$ANDROID_PROFILE"
 assert_profile_keys_absent "$ANDROID_PROFILE" ARCH ABI AVD_ARCH AVD_ABI AVDMANAGER_ABI AVDMANAGER_ARCH EMULATOR_ABI EMULATOR_ARCH
 require_profile_value AVD_NAME
 require_profile_value SYS_IMG_PKG
+
+SDKMANAGER="$(resolve_android_tool sdkmanager)"
+AVDMANAGER="$(resolve_android_tool avdmanager)"
+"${SCRIPT_DIR}/accept-sdk-licenses.sh"
 
 ARCH="$(uname -m)"
 echo "Detected architecture: $ARCH" >&2

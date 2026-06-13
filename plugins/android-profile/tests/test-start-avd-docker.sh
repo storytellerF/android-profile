@@ -35,7 +35,8 @@ cleanup() {
 trap cleanup EXIT
 
 HOME_DIR="${TMP_DIR}/android-home"
-FAKE_BIN_DIR="${TMP_DIR}/fake-bin"
+SDK_HOME="${TMP_DIR}/android-sdk"
+AVD_HOME="${TMP_DIR}/custom-avd-home"
 PROFILE_PATH="${TMP_DIR}/android.profile"
 EMULATOR_ARGS_LOG="${TMP_DIR}/emulator-args.log"
 EMULATOR_ENV_LOG="${TMP_DIR}/emulator-env.log"
@@ -43,10 +44,15 @@ EMULATOR_CONFIG_LOG="${TMP_DIR}/emulator-config.log"
 ADB_ARGS_LOG="${TMP_DIR}/adb-args.log"
 START_AVD_OUT="${TMP_DIR}/start-avd.out"
 START_AVD_ERR="${TMP_DIR}/start-avd.err"
+CREATE_AVD_OUT="${TMP_DIR}/create-avd.out"
+CREATE_AVD_ERR="${TMP_DIR}/create-avd.err"
 
-mkdir -p "${HOME_DIR}/.android/avd/docker-test-avd.avd" "$FAKE_BIN_DIR"
-touch "${HOME_DIR}/.android/avd/docker-test-avd.avd/stale.lock"
-cat > "${HOME_DIR}/.android/avd/docker-test-avd.avd/config.ini" <<'CONFIG'
+mkdir -p "${AVD_HOME}/docker-test-avd.avd" \
+    "${SDK_HOME}/cmdline-tools/latest/bin" \
+    "${SDK_HOME}/emulator" \
+    "${SDK_HOME}/platform-tools"
+touch "${AVD_HOME}/docker-test-avd.avd/stale.lock"
+cat > "${AVD_HOME}/docker-test-avd.avd/config.ini" <<'CONFIG'
 hw.gpu.enabled=no
 hw.gpu.mode=auto
 hw.accelerometer_uncalibrated=yes
@@ -54,26 +60,52 @@ duplicate.key=old-first
 duplicate.key=old-second
 CONFIG
 
-cat > "${FAKE_BIN_DIR}/emulator" <<'EMULATOR'
+cat > "${SDK_HOME}/emulator/emulator" <<'EMULATOR'
 #!/usr/bin/env bash
 set -euo pipefail
 printf "%s\n" "$@" > "${EMULATOR_ARGS_LOG}"
 printf "DISPLAY=%s\n" "${DISPLAY:-}" > "${EMULATOR_ENV_LOG}"
-cp "${HOME}/.android/avd/docker-test-avd.avd/config.ini" "${EMULATOR_CONFIG_LOG}"
+cp "${ANDROID_AVD_HOME}/docker-test-avd.avd/config.ini" "${EMULATOR_CONFIG_LOG}"
 exit 0
 EMULATOR
 
-cat > "${FAKE_BIN_DIR}/adb" <<'ADB'
+cat > "${SDK_HOME}/platform-tools/adb" <<'ADB'
 #!/usr/bin/env bash
 set -euo pipefail
 printf "%s\n" "$@" >> "${ADB_ARGS_LOG}"
 exit 0
 ADB
 
-chmod +x "${FAKE_BIN_DIR}/emulator" "${FAKE_BIN_DIR}/adb"
+cat > "${SDK_HOME}/cmdline-tools/latest/bin/sdkmanager" <<'SDKMANAGER'
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "${1:-}" = "--list_installed" ]; then
+    printf '%s\n' 'system-images;android-36.1;google_apis;x86_64 | 1 | installed'
+    printf '%s\n' 'system-images;android-36.1;google_apis;arm64-v8a | 1 | installed'
+fi
+exit 0
+SDKMANAGER
 
-cat > "$PROFILE_PATH" <<'PROFILE'
+cat > "${SDK_HOME}/cmdline-tools/latest/bin/avdmanager" <<'AVDMANAGER'
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "${1:-}" = "list" ] && [ "${2:-}" = "avd" ]; then
+    printf '%s\n' 'Name: docker-test-avd'
+fi
+exit 0
+AVDMANAGER
+
+chmod +x \
+    "${SDK_HOME}/cmdline-tools/latest/bin/avdmanager" \
+    "${SDK_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+    "${SDK_HOME}/emulator/emulator" \
+    "${SDK_HOME}/platform-tools/adb"
+
+cat > "$PROFILE_PATH" <<PROFILE
+ANDROID_HOME=${SDK_HOME}
+ANDROID_AVD_HOME=${AVD_HOME}
 AVD_NAME=docker-test-avd
+SYS_IMG_PKG='system-images;android-36.1;google_apis'
 EMULATOR_DISPLAY=:42
 EMULATOR_FLAG_no_audio=true
 EMULATOR_FLAG_no_snapshot=true
@@ -94,7 +126,16 @@ echo "Running start-avd.sh smoke test with fake emulator commands..."
 assert_profile_arg_case
 
 if ! HOME="$HOME_DIR" \
-    PATH="${FAKE_BIN_DIR}:${PATH}" \
+    bash "${PLUGIN_DIR}/scripts/create-avd.sh" "$PROFILE_PATH" > "$CREATE_AVD_OUT" 2> "$CREATE_AVD_ERR"; then
+    echo "Error: create-avd.sh failed." >&2
+    cat "$CREATE_AVD_OUT" >&2
+    cat "$CREATE_AVD_ERR" >&2
+    exit 1
+fi
+
+grep -q "AVD 'docker-test-avd' already exists." "$CREATE_AVD_ERR"
+
+if ! HOME="$HOME_DIR" \
     EMULATOR_ARGS_LOG="$EMULATOR_ARGS_LOG" \
     EMULATOR_ENV_LOG="$EMULATOR_ENV_LOG" \
     EMULATOR_CONFIG_LOG="$EMULATOR_CONFIG_LOG" \
@@ -136,7 +177,7 @@ if grep -q -- "-verbose" "$EMULATOR_ARGS_LOG"; then
     exit 1
 fi
 
-if [ -e "${HOME_DIR}/.android/avd/docker-test-avd.avd/stale.lock" ]; then
+if [ -e "${AVD_HOME}/docker-test-avd.avd/stale.lock" ]; then
     echo "Error: stale AVD lock file was not removed." >&2
     exit 1
 fi

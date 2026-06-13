@@ -38,6 +38,10 @@ ANDROID_HOME=$HOME/android-sdk ./scripts/install-sdk.sh
 ./scripts/start-avd.sh ./profiles/android.profile
 ```
 
+自定义 profile 可以直接定义 Android 标准路径变量 `ANDROID_HOME`、
+`ANDROID_AVD_HOME` 和 `ANDROID_USER_HOME`。脚本会先加载 profile，再查找 SDK
+工具和 AVD 文件。仓库随附的 `profiles/android.profile` 不预设这些路径。
+
 在仓库根目录下使用假的模拟器命令运行 `start-avd.sh` 冒烟测试：
 
 ```bash

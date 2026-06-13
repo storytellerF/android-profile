@@ -112,7 +112,7 @@ resolve_android_tool() {
     local name="$1"
     local candidate
     local tool_dir=""
-    local android_home="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-${HOME}/android-sdk}}"
+    local android_home="${ANDROID_HOME:-${HOME}/android-sdk}"
 
     for candidate in "$name" "${name}.bat" "${name}.cmd" "${name}.exe"; do
         if command -v "$candidate" >/dev/null 2>&1; then
@@ -144,6 +144,12 @@ resolve_android_tool() {
 
     echo "Error: Android tool not found: ${name}. Add it to PATH or set ANDROID_HOME." >&2
     return 1
+}
+
+resolve_android_avd_home() {
+    local home_dir="${HOME:-/home/$(id -un)}"
+
+    printf '%s\n' "${ANDROID_AVD_HOME:-${ANDROID_USER_HOME:-${home_dir}/.android}/avd}"
 }
 
 has_any_var_with_prefix() {
@@ -209,10 +215,12 @@ append_args_from_env() {
 
 resolve_avd_config_path() {
     local avd_name="$1"
-    local home_dir="${HOME:-/home/$(id -un)}"
-    local avd_home="${ANDROID_AVD_HOME:-${ANDROID_USER_HOME:-${home_dir}/.android}/avd}"
-    local avd_ini="${avd_home}/${avd_name}.ini"
+    local avd_home
+    local avd_ini=""
     local avd_dir=""
+
+    avd_home="$(resolve_android_avd_home)"
+    avd_ini="${avd_home}/${avd_name}.ini"
 
     if [ -n "${AVDMANAGER_VALUE_path:-}" ]; then
         avd_dir="$AVDMANAGER_VALUE_path"

@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "${SCRIPT_DIR}/profile-utils.sh"
 
-ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-${HOME}/android-sdk}}"
+ANDROID_HOME="${ANDROID_HOME:-${HOME}/android-sdk}"
 echo "android home: $ANDROID_HOME"
 export ANDROID_HOME
 CLI_VERSION=""

@@ -15,9 +15,6 @@ LOADED_PROFILE="$ANDROID_PROFILE"
 # shellcheck source=/dev/null
 source "${SCRIPT_DIR}/profile-utils.sh"
 
-ADB="$(resolve_android_tool adb)"
-EMULATOR="$(resolve_android_tool emulator)"
-
 build_emulator_args() {
     local -n args_ref="$1"
 
@@ -40,6 +37,9 @@ load_profile "$ANDROID_PROFILE"
 assert_profile_keys_absent "$LOADED_PROFILE" ARCH ABI AVD_ARCH AVD_ABI AVDMANAGER_ABI AVDMANAGER_ARCH EMULATOR_ABI EMULATOR_ARCH
 require_profile_value AVD_NAME
 
+ADB="$(resolve_android_tool adb)"
+EMULATOR="$(resolve_android_tool emulator)"
+
 AVD_CONFIG_PATH="$(resolve_avd_config_path "$AVD_NAME")"
 apply_emulator_config "$AVD_CONFIG_PATH"
 
@@ -47,7 +47,8 @@ echo "Starting emulator..."
 
 export DISPLAY="${EMULATOR_DISPLAY:-:1}"
 
-rm -f ~/.android/avd/*.avd/*.lock
+AVD_HOME="$(resolve_android_avd_home)"
+rm -f "${AVD_HOME}"/*.avd/*.lock
 
 declare -a emulator_args
 build_emulator_args emulator_args
