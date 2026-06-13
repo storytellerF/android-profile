@@ -180,8 +180,7 @@ append_args_from_env() {
 
         value="${!var-}"
         if is_true "$value"; then
-            name="${name_raw,,}"
-            name="${name//_/-}"
+            name="${name_raw//_/-}"
             target_ref+=("${dash}${name}")
         fi
     done
@@ -202,8 +201,7 @@ append_args_from_env() {
 
         value="${!var-}"
         if [ -n "$value" ]; then
-            name="${name_raw,,}"
-            name="${name//_/-}"
+            name="${name_raw//_/-}"
             target_ref+=("${dash}${name}" "$value")
         fi
     done

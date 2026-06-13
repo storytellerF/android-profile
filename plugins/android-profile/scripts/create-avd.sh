@@ -52,7 +52,7 @@ build_avdmanager_args() {
         --package "$RESOLVED_SYS_IMG_PKG"
     )
 
-    append_args_from_env args_ref AVDMANAGER -- NAME PACKAGE
+    append_args_from_env args_ref AVDMANAGER -- name package
 }
 
 is_sdk_package_installed() {

@@ -5,6 +5,30 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 
+# shellcheck source=/dev/null
+source "${PLUGIN_DIR}/scripts/profile-utils.sh"
+
+assert_profile_arg_case() {
+    local emulator_output avdmanager_output
+    local EMULATOR_FLAG_Mixed_Case=true
+    local EMULATOR_VALUE_Custom_Value=preserved
+    local AVDMANAGER_FLAG_verbose=true
+    local AVDMANAGER_VALUE_Custom_Path=/tmp/avd
+    local -a emulator_args=()
+    local -a avdmanager_args=()
+
+    append_args_from_env emulator_args EMULATOR -
+    append_args_from_env avdmanager_args AVDMANAGER --
+
+    emulator_output="$(printf '%s\n' "${emulator_args[@]}")"
+    avdmanager_output="$(printf '%s\n' "${avdmanager_args[@]}")"
+
+    grep -qx -- "-Mixed-Case" <<< "$emulator_output"
+    grep -qx -- "-Custom-Value" <<< "$emulator_output"
+    grep -qx -- "--verbose" <<< "$avdmanager_output"
+    grep -qx -- "--Custom-Path" <<< "$avdmanager_output"
+}
+
 cleanup() {
     rm -rf "$TMP_DIR"
 }
@@ -42,14 +66,18 @@ chmod +x "${FAKE_BIN_DIR}/emulator" "${FAKE_BIN_DIR}/adb"
 cat > "$PROFILE_PATH" <<'PROFILE'
 AVD_NAME=docker-test-avd
 EMULATOR_DISPLAY=:42
-EMULATOR_FLAG_NO_AUDIO=true
-EMULATOR_FLAG_NO_SNAPSHOT=true
-EMULATOR_FLAG_VERBOSE=false
-EMULATOR_VALUE_GPU=swiftshader_indirect
-EMULATOR_VALUE_MEMORY=2048
+EMULATOR_FLAG_no_audio=true
+EMULATOR_FLAG_no_snapshot=true
+EMULATOR_FLAG_verbose=false
+EMULATOR_FLAG_Mixed_Case=true
+EMULATOR_VALUE_gpu=swiftshader_indirect
+EMULATOR_VALUE_memory=2048
+EMULATOR_VALUE_Custom_Value=preserved
 PROFILE
 
 echo "Running start-avd.sh smoke test with fake emulator commands..."
+
+assert_profile_arg_case
 
 if ! HOME="$HOME_DIR" \
     PATH="${FAKE_BIN_DIR}:${PATH}" \
@@ -73,6 +101,9 @@ grep -q -- "-gpu" "$EMULATOR_ARGS_LOG"
 grep -q "swiftshader_indirect" "$EMULATOR_ARGS_LOG"
 grep -q -- "-memory" "$EMULATOR_ARGS_LOG"
 grep -q "2048" "$EMULATOR_ARGS_LOG"
+grep -q -- "-Mixed-Case" "$EMULATOR_ARGS_LOG"
+grep -q -- "-Custom-Value" "$EMULATOR_ARGS_LOG"
+grep -q "preserved" "$EMULATOR_ARGS_LOG"
 grep -q "DISPLAY=:42" "$EMULATOR_ENV_LOG"
 
 if grep -q -- "-verbose" "$EMULATOR_ARGS_LOG"; then
