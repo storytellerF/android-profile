@@ -56,3 +56,20 @@ plugins/android-profile/tests/test-start-avd-docker.sh
 netsh interface portproxy add v4tov4 listenaddress=192.168.80.1 listenport=5555 connectaddress=127.0.0.1 connectport=5555
 netsh advfirewall firewall add rule name="Android Emulator ADB 5555" dir=in action=allow protocol=TCP localport=5555 remoteip=192.168.80.0/24
 ```
+
+需要确保配置存在 
+```shell
+netsh interface portproxy show all
+```
+
+确保真的在监听 
+```
+netstat -ano | findstr "192.168.80.1:5555"
+```
+
+如果没有在监听需要重启服务
+
+```shell
+net stop iphlpsvc
+net start iphlpsvc
+```
