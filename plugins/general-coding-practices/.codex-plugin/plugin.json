@@ -1,0 +1,35 @@
+{
+  "name": "general-coding-practices",
+  "version": "0.1.0+codex.20260615100000",
+  "description": "General coding project practices for diagnosing problems before adding fallbacks or workarounds.",
+  "author": {
+    "name": "Local Coding Practices"
+  },
+  "license": "MIT",
+  "keywords": [
+    "coding",
+    "debugging",
+    "root-cause",
+    "fallback",
+    "best-practices"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "General Coding Practices",
+    "shortDescription": "Find root causes before adding fallbacks.",
+    "longDescription": "Guides Codex to identify the essential root cause of coding problems before deciding whether fallback behavior, guards, retries, defaults, or workarounds are warranted.",
+    "developerName": "Local Coding Practices",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Code Review",
+      "Code Generation",
+      "Debugging"
+    ],
+    "defaultPrompt": [
+      "Debug this failure and find the root cause.",
+      "Fix this bug without adding unnecessary fallback behavior.",
+      "Review whether this fallback is justified by the root cause."
+    ],
+    "brandColor": "#2563EB"
+  }
+}
