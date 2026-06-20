@@ -1,31 +1,55 @@
-# android-profile
+# me
 
-用于 Docker Android 模拟器镜像的 Codex 插件包，包含 Android SDK 和 AVD 配置脚本。
+一个本地 Codex Android 插件合集。当前包含 Android SDK/AVD 配置脚本、RecyclerView 最佳实践 skill，以及通用编码实践 skill。
 
 ## 包结构
 
-- `.agents/plugins/marketplace.json`：仓库内的 Codex marketplace 条目。
+- `.agents/plugins/marketplace.json`：仓库内的 `me` Codex marketplace 条目。
 - `plugins/android-profile/.codex-plugin/plugin.json`：插件清单文件。
 - `plugins/android-profile/scripts/`：Android SDK、AVD 和模拟器脚本。
 - `plugins/android-profile/tests/`：冒烟测试脚本。
 - `plugins/android-profile/profiles/android.profile`：默认 Android 模拟器配置。
 - `plugins/android-profile/skills/android-profile/SKILL.md`：面向 Codex 的使用说明。
+- `plugins/recyclerview-best-practice/.codex-plugin/plugin.json`：RecyclerView 最佳实践插件清单文件。
+- `plugins/recyclerview-best-practice/skills/`：RecyclerView adapter、diff、paging、sentinel ViewHolder 等实践说明。
+- `plugins/general-coding-practices/.codex-plugin/plugin.json`：通用编码实践插件清单文件。
+- `plugins/general-coding-practices/skills/`：先找根因再加 fallback 的实践说明。
 
 ## 安装
 
 将此 GitHub 仓库添加为 Codex 插件 marketplace：
 
 ```bash
-codex plugin marketplace add https://github.com/storytellerF/android-profile
+codex plugin marketplace add https://github.com/storytellerF/me
 ```
 
 从该 marketplace 安装插件：
 
 ```bash
-codex plugin add android-profile@android-profile-local
+codex plugin add android-profile@me
+codex plugin add recyclerview-best-practice@me
+codex plugin add general-coding-practices@me
 ```
 
 安装后启动一个新的 Codex 线程，以便加载插件 skill。
+
+### Claude Code
+
+在目标项目中创建 `CLAUDE.md`，引用本仓库中需要的 skill 文件：
+
+```markdown
+@plugins/recyclerview-best-practice/skills/android-recyclerview-best-practice/SKILL.md
+@plugins/general-coding-practices/skills/root-cause-before-fallback/SKILL.md
+```
+
+或者将本仓库克隆到本地后，在目标项目的 `CLAUDE.md` 中用绝对路径引用：
+
+```markdown
+@/path/to/me/plugins/recyclerview-best-practice/skills/android-recyclerview-best-practice/SKILL.md
+@/path/to/me/plugins/general-coding-practices/skills/root-cause-before-fallback/SKILL.md
+```
+
+Claude Code 会在对话开始时自动加载这些指引。
 
 ## 直接使用脚本
 

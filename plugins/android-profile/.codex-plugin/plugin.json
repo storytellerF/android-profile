@@ -1,14 +1,14 @@
 {
   "name": "android-profile",
-  "version": "0.1.0",
+  "version": "0.1.0+codex.20260614105938",
   "description": "Shared Android SDK and AVD profile scripts for Docker-based Android emulator images.",
   "author": {
     "name": "Android Profile Maintainers",
     "email": "fake@example.com",
-    "url": "https://github.com/storytellerF/android-profile"
+    "url": "https://github.com/storytellerF/me"
   },
-  "homepage": "https://github.com/storytellerF/android-profile",
-  "repository": "https://github.com/storytellerF/android-profile",
+  "homepage": "https://github.com/storytellerF/me",
+  "repository": "https://github.com/storytellerF/me",
   "license": "UNLICENSED",
   "keywords": [
     "android",
@@ -28,9 +28,9 @@
       "Interactive",
       "Write"
     ],
-    "websiteURL": "https://github.com/storytellerF/android-profile",
-    "privacyPolicyURL": "https://github.com/storytellerF/android-profile",
-    "termsOfServiceURL": "https://github.com/storytellerF/android-profile",
+    "websiteURL": "https://github.com/storytellerF/me",
+    "privacyPolicyURL": "https://github.com/storytellerF/me",
+    "termsOfServiceURL": "https://github.com/storytellerF/me",
     "defaultPrompt": [
       "Create an Android AVD from the default profile.",
       "Start the configured Android emulator.",
