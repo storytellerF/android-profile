@@ -1,0 +1,38 @@
+{
+  "name": "me",
+  "owner": {
+    "name": "storytellerF"
+  },
+  "interface": {
+    "displayName": "Me"
+  },
+  "plugins": [
+    {
+      "name": "android-profile",
+      "source": "./plugins/android-profile",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "recyclerview-best-practice",
+      "source": "./plugins/recyclerview-best-practice",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "general-coding-practices",
+      "source": "./plugins/general-coding-practices",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
